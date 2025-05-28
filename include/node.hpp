@@ -1,9 +1,11 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
-namespace ds {
+namespace ds
+{
 template<typename T>
-struct Node {
+struct Node
+{
   T m_value{};
   Node<T>* m_left{};
   Node<T>* m_right{};

@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-namespace ds {
+namespace ds
+{
 enum class Degree : std::uint8_t { LEAF, UNARY, BINARY };
 } // namespace ds
 

@@ -9,9 +9,11 @@
 #include <string>
 #include <sys/types.h>
 
-namespace ds {
+namespace ds
+{
 template<typename T>
-class Tree {
+class Tree
+{
 public:
   using size_type = u_int64_t;
   using TreeNode = Node<T>;
