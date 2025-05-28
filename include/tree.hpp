@@ -15,7 +15,7 @@ template<typename T>
 class Tree
 {
 public:
-  using size_type = u_int64_t;
+  using size_type = int64_t;
   using TreeNode = Node<T>;
   using TreeNodePtr = TreeNode*;
 
