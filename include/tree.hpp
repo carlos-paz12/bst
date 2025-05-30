@@ -5,207 +5,360 @@
 #include "node.hpp"
 
 #include <iostream>
+#include <ostream>
 #include <sstream>
 #include <string>
-#include <sys/types.h>
 
 namespace ds
 {
 template<typename T>
-class Tree
+class BinarySearchTree
 {
 public:
-  using size_type = int64_t;
-  using TreeNode = Node<T>;
-  using TreeNodePtr = TreeNode*;
+  using value_type = T;
+  using size_type = long long;
+  using node = Node<value_type>;
+  using node_ptr = node*;
 
-  Tree() : m_root(nullptr) { }
+private:
+  node_ptr m_root; //!< Pointer to the root node of the tree.
 
-  Tree(const Tree& other) : m_root(copy(other.m_root)) { }
+public:
+  /// @brief Default constructor.
+  BinarySearchTree() : m_root(nullptr) { }
 
-  Tree& operator=(const Tree& other) {
-    if (this != &other) {
+  /// @brief Copy constructor.
+  BinarySearchTree(const BinarySearchTree& other) : m_root(copy(other.m_root)) { }
+
+  /// @brief Move constructor.
+  BinarySearchTree(const BinarySearchTree&& other) noexcept : m_root(other.m_root) { other.m_root = nullptr; }
+
+  /// @brief Copy assignment operator.
+  BinarySearchTree& operator=(const BinarySearchTree& other)
+  {
+    if (this != &other)
+    {
       destroy(m_root);
       m_root = copy(other.m_root);
     }
     return *this;
   }
 
-  ~Tree() { destroy(m_root); }
+  /// @brief Move assignment operator.
+  BinarySearchTree& operator=(BinarySearchTree&& other) noexcept
+  {
+    if (this != &other)
+    {
+      destroy(m_root);
+      m_root = other.m_root;
+      other.m_root = nullptr;
+    }
+    return *this;
+  }
 
-  TreeNodePtr search(const T& value) { return search(m_root, value); }
+  /// @brief Destructor.
+  ~BinarySearchTree() { destroy(m_root); }
 
-  void insert(const T& value) { insert(m_root, value); }
+  /**
+   * @brief Searches for a node containing the given value.
+   *
+   * Traverses the binary search tree to locate the node whose value matches `_target_`.
+   *
+   * @param _target_ The value to search for.
+   *
+   * @return A reference to the pointer to the node containing the target value,
+   *         or a null pointer reference if the value is not found.
+   */
+  [[nodiscard]] node_ptr& find(const value_type& _target_) { return find(m_root, _target_); }
 
-  void remove(const T& value) { remove(m_root, value); }
+  /**
+   * @brief Inserts a value into the tree.
+   *
+   * Attempts to insert `_target_` into the binary search tree. If the value already
+   * exists in the tree, the insertion is not performed.
+   *
+   * @param _target_ The value to insert.
+   *
+   * @return `true` if the value was inserted successfully, `false` if it already exists.
+   */
+  [[nodiscard]] bool insert(const value_type _target_) { return insert(m_root, _target_); }
 
+  /**
+   * @brief Removes a value from the tree.
+   *
+   * Attempts to remove the node with the value `_target_` from the binary search tree.
+   *
+   * @param _target_ The value to remove.
+   *
+   * @return `true` if the value was found and removed, `false` otherwise.
+   */
+  [[nodiscard]] bool remove(const value_type& _target_) { return remove(m_root, _target_); }
+
+  /**
+   * @brief Checks whether the tree is empty.
+   *
+   * @return `true` if the container is empty, `false` otherwise.
+   */
+  [[nodiscard]] bool empty() const { return (not m_root); }
+
+  /**
+   * @brief Calculate the height of tree (0-indexed).
+   *
+   * @return The height of the tree (0-indexed) or `-1` if the tree is empty.
+   */
   [[nodiscard]] size_type height() const { return height(m_root); }
 
-  [[nodiscard]] size_type count() const { return count(m_root); }
+  /**
+   * @brief Calculate the number of nodes in the tree.
+   *
+   * @return The number of nodes in the tree or `0` if the tree is empty.
+   */
+  [[nodiscard]] size_type size() const { return size(m_root); }
 
-  void pre_order_lr() { pre_order_lr(m_root); }
+  /**
+   * @brief Displays the tree using pre-order traversal (left-to-right).
+   *
+   * Visits the root node first, followed by the left subtree, then the right subtree.
+   * The values are printed to the standard output.
+   */
+  void pre_order_lr() { display_pre_order_lr(m_root); }
 
-  void pre_order_rl() { pre_order_rl(m_root); }
+  /**
+   * @brief Displays the tree using pre-order traversal (right-to-left).
+   *
+   * Visits the root node first, followed by the right subtree, then the left subtree.
+   * The values are printed to the standard output.
+   */
+  void pre_order_rl() { display_pre_order_rl(m_root); }
 
-  void in_order_lr() { in_order_lr(m_root); }
+  /**
+   * @brief Displays the tree using in-order traversal (left-to-right).
+   *
+   * Visits the left subtree first, followed by the root node, then the right subtree.
+   * The values are printed to the standard output in ascending order if the tree is a valid BST.
+   */
+  void in_order_lr() { display_in_order_lr(m_root); }
 
-  void in_order_rl() { in_order_rl(m_root); }
+  /**
+   * @brief Displays the tree using in-order traversal (right-to-left).
+   *
+   * Visits the right subtree first, followed by the root node, then the left subtree.
+   * The values are printed to the standard output in descending order if the tree is a valid BST.
+   */
+  void in_order_rl() { display_in_order_rl(m_root); }
 
-  void post_order_lr() { post_order_lr(m_root); }
+  /**
+   * @brief Displays the tree using post-order traversal (left-to-right).
+   *
+   * Visits the left subtree first, then the right subtree, and finally the root node.
+   * The values are printed to the standard output.
+   */
+  void post_order_lr() { display_post_order_lr(m_root); }
 
-  void post_order_rl() { post_order_rl(m_root); }
+  /**
+   * @brief Displays the tree using post-order traversal (right-to-left).
+   *
+   * Visits the right subtree first, then the left subtree, and finally the root node.
+   * The values are printed to the standard output.
+   */
+  void post_order_rl() { display_post_order_rl(m_root); }
 
+  /**
+   * @brief Returns a string representation of the tree structure.
+   *
+   * Produces a visual layout of the tree using Unicode characters to illustrate the hierarchy.
+   *
+   * @return A formatted string representing the tree's structure.
+   */
   [[nodiscard]] std::string to_string() const { return to_string(m_root, "", false, true); }
 
 private:
-  TreeNodePtr m_root;
+  /// @brief Creates a deep copy of the subtree rooted at _node_.
+  node_ptr copy(const node_ptr& _node_)
+  {
+    if (not _node_) return nullptr;
 
-  TreeNodePtr copy(TreeNodePtr other_root) {
-    if (not other_root) {
-      return nullptr;
-    }
-    TreeNodePtr new_root{ new TreeNode(other_root->m_value) };
-    new_root->m_left = copy(other_root->m_left);
-    new_root->m_right = copy(other_root->m_right);
+    // [!] Allocates and builds a new node with the same value.
+    node_ptr new_root = new node(_node_->m_value);
+
+    // [!] Recursively copies the left and right children
+    new_root->m_left = copy(_node_->m_left);
+    new_root->m_right = copy(_node_->m_right);
+
     return new_root;
   }
 
-  void destroy(TreeNodePtr& node) {
-    if (not node) {
-      return;
-    }
-    destroy(node->m_left);
-    destroy(node->m_right);
-    delete node;
-    node = nullptr;
+  /// @brief Recursively destroy the subtree rooted at _node_.
+  void destroy(node_ptr& _node_)
+  {
+    if (not _node_) return;
+
+    destroy(_node_->m_left);
+    destroy(_node_->m_right);
+
+    // [!] Destroys the value stored in the node and frees the allocated memory.
+    delete _node_;
+
+    _node_ = nullptr;
   }
 
-  TreeNodePtr search(const TreeNodePtr& node, const T& value) {
-    if (not node) {
-      return nullptr;
-    }
-    if (value == node->m_value) {
-      return node;
-    }
-    if (value < node->m_value) {
-      return search(node->m_left, value);
-    }
-    return search(node->m_right, value);
+  [[nodiscard]] node_ptr& find(node_ptr& _node_, const value_type& _target_)
+  {
+    if (not _node_) return _node_;
+
+    if (_target_ == _node_->m_value)
+      return _node_;
+    else if (_target_ < _node_->m_value)
+      return find(_node_->m_left, _target_);
+    else
+      return find(_node_->m_right, _target_);
   }
 
-  void insert(TreeNodePtr& node, const T& value) {
-    if (not node) {
-      node = new TreeNode(value);
-    } else if (value < node->m_value) {
-      insert(node->m_left, value);
-    } else if (value > node->m_value) {
-      insert(node->m_right, value);
+  [[nodiscard]] bool insert(node_ptr& _node_, const value_type _target_)
+  {
+    if (not _node_)
+    {
+      _node_ = new node(_target_);
+      return true;
+    }
+    else if (_target_ < _node_->m_value)
+    {
+      return insert(_node_->m_left, _target_);
+    }
+    else if (_target_ > _node_->m_value)
+    {
+      return insert(_node_->m_right, _target_);
+    }
+    else
+    {
+      return false;
     }
   }
 
-  void remove(TreeNodePtr& node, const T& value) {
-    if (not node) {
-      return;
-    }
+  [[nodiscard]] bool remove(node_ptr& _node_, const value_type& _target_)
+  {
+    if (not _node_) return false;
 
-    if (value < node->m_value) {
-      remove(node->m_left, value);
-    } else if (value > node->m_value) {
-      remove(node->m_right, value);
-    } else {
-      if (degree(node) == Degree::LEAF) {
-        delete node;
-        node = nullptr;
-      } else if (degree(node) == Degree::UNARY) {
-        TreeNodePtr child{ node->m_left ? node->m_left : node->m_right };
-        delete node;
-        node = child;
-      } else {
-        /// @todo fix: Backward branch (while loop) is ID-dependent due to variable reference to 'min_right' and may
-        /// cause performance degradationclang-tidy(altera-id-dependent-backward-branch)
-        TreeNodePtr min_right{ node->m_right };
-        while (min_right->m_left) min_right = min_right->m_left;
-        node->m_value = min_right->m_value;
-        remove(node->m_right, min_right->m_value);
+    if (_target_ < _node_->m_value)
+    {
+      return remove(_node_->m_left, _target_);
+    }
+    else if (_target_ > _node_->m_value)
+    {
+      return remove(_node_->m_right, _target_);
+    }
+    else
+    {
+      if (degree(_node_) == Degree::LEAF)
+      {
+        delete _node_;
+        _node_ = nullptr;
+      }
+      else if (degree(_node_) == Degree::UNARY)
+      {
+        node_ptr child{ _node_->m_left ? _node_->m_left : _node_->m_right };
+        delete _node_;
+        _node_ = child;
+      }
+      else
+      {
+        node_ptr min_in_right{ _node_->m_right };
+        while (min_in_right->m_left) min_in_right = min_in_right->m_left;
+        _node_->m_value = min_in_right->m_value;
+        return remove(_node_->m_right, min_in_right->m_value);
       }
     }
+    return true;
   }
 
-  Degree degree(const TreeNodePtr& node) const {
-    if (not node->m_left and not node->m_right) {
+  Degree degree(const node_ptr& _node_) const
+  {
+    if (not _node_->m_left and not _node_->m_right)
       return Degree::LEAF;
-    }
-    if (node->m_left and node->m_right) {
+    else if (_node_->m_left and _node_->m_right)
       return Degree::BINARY;
-    }
-    return Degree::UNARY;
+    else
+      return Degree::UNARY;
   }
 
-  [[nodiscard]] size_type height(const TreeNodePtr& node) const {
-    if (not node) {
-      return -1;
-    }
-    size_type left{ height(node->m_left) };
-    size_type right{ height(node->m_right) };
-    return 1 + std::max(left, right);
+  [[nodiscard]] size_type height(const node_ptr& _node_) const
+  {
+    if (not _node_) return -1;
+
+    const size_type height_left{ height(_node_->m_left) };
+    const size_type height_right{ height(_node_->m_right) };
+
+    return 1 + std::max(height_left, height_right);
   }
 
-  [[nodiscard]] size_type count(const TreeNodePtr& node) const {
-    if (not node) {
-      return 0;
-    }
-    return 1 + count(node->m_left) + count(node->m_right);
+  [[nodiscard]] size_type size(const node_ptr& _node_) const
+  {
+    if (not _node_) return 0;
+    return (1 + size(_node_->m_left) + size(_node_->m_right));
   }
 
-  void pre_order_lr(const TreeNodePtr& node) {
-    if (node) {
-      std::cout << node->m_value << " ";
-      pre_order_lr(node->m_left);
-      pre_order_lr(node->m_right);
-    }
-  }
-
-  void pre_order_rl(const TreeNodePtr& node) {
-    if (node) {
-      std::cout << node->m_value << " ";
-      pre_order_rl(node->m_right);
-      pre_order_rl(node->m_left);
+  void display_pre_order_lr(const node_ptr& _node_)
+  {
+    if (_node_)
+    {
+      std::cout << _node_->m_value << " ";
+      display_pre_order_lr(_node_->m_left);
+      display_pre_order_lr(_node_->m_right);
     }
   }
 
-  void in_order_lr(const TreeNodePtr& node) {
-    if (node) {
-      in_order_lr(node->m_left);
-      std::cout << node->m_value << " ";
-      in_order_lr(node->m_right);
+  void display_pre_order_rl(const node_ptr& _node_)
+  {
+    if (_node_)
+    {
+      std::cout << _node_->m_value << " ";
+      display_pre_order_rl(_node_->m_right);
+      display_pre_order_rl(_node_->m_left);
     }
   }
 
-  void in_order_rl(const TreeNodePtr& node) {
-    if (node) {
-      in_order_rl(node->m_right);
-      std::cout << node->m_value << " ";
-      in_order_rl(node->m_left);
+  void display_in_order_lr(const node_ptr& _node_)
+  {
+    if (_node_)
+    {
+      display_in_order_lr(_node_->m_left);
+      std::cout << _node_->m_value << " ";
+      display_in_order_lr(_node_->m_right);
     }
   }
 
-  void post_order_lr(const TreeNodePtr& node) {
-    if (node) {
-      post_order_lr(node->m_left);
-      post_order_lr(node->m_right);
-      std::cout << node->m_value << " ";
+  void display_in_order_rl(const node_ptr& _node_)
+  {
+    if (_node_)
+    {
+      display_in_order_rl(_node_->m_right);
+      std::cout << _node_->m_value << " ";
+      display_in_order_rl(_node_->m_left);
     }
   }
 
-  void post_order_rl(const TreeNodePtr& node) {
-    if (node) {
-      post_order_rl(node->m_right);
-      post_order_rl(node->m_left);
-      std::cout << node->m_value << " ";
+  void display_post_order_lr(const node_ptr& _node_)
+  {
+    if (_node_)
+    {
+      display_post_order_lr(_node_->m_left);
+      display_post_order_lr(_node_->m_right);
+      std::cout << _node_->m_value << " ";
     }
   }
 
-  [[nodiscard]] std::string to_string(const TreeNodePtr& node, std::string prefix, bool is_left, bool is_root) const {
+  void display_post_order_rl(const node_ptr& _node_)
+  {
+    if (_node_)
+    {
+      display_post_order_rl(_node_->m_right);
+      display_post_order_rl(_node_->m_left);
+      std::cout << _node_->m_value << " ";
+    }
+  }
+
+  [[nodiscard]] std::string to_string(const node_ptr& _node_, std::string prefix, bool is_left, bool is_root) const
+  {
     /*
      * The following function have been provided by:
      * <https://stackoverflow.com/questions/36802354/print-binary-tree-in-a-pretty-way-using-c>
@@ -217,11 +370,14 @@ private:
     oss << prefix;
     oss << (is_root ? ".\n└──" : (is_left ? "├──" : "└──"));
 
-    if (node) {
-      oss << "\033[32m◉ " << node->m_value << "\033[0m\n";
-      oss << to_string(node->m_right, prefix + (is_left ? "│  " : "   "), true, false);
-      oss << to_string(node->m_left, prefix + (is_left ? "│  " : "   "), false, false);
-    } else {
+    if (_node_)
+    {
+      oss << "\033[32m◉ " << _node_->m_value << "\033[0m\n";
+      oss << to_string(_node_->m_right, prefix + (is_left ? "│  " : "   "), true, false);
+      oss << to_string(_node_->m_left, prefix + (is_left ? "│  " : "   "), false, false);
+    }
+    else
+    {
       oss << "\033[31mx\033[0m\n";
     }
 
