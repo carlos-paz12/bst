@@ -42,13 +42,15 @@ int main()
 
   info(tree, "Tree structure before removals:", 5);
 
-  std::vector<int> values_to_remove{ 10, 15, 80, 50 };
-  for (const auto& val : values_to_remove)
-  {
-    (void)tree.remove(val);
-    info(tree, "Removed \033[31m" + std::to_string(val) + "\033[0m...", 4);
-  }
+  // std::vector<int> values_to_remove{ 10, 15, 80, 50 };
+  // for (const auto& val : values_to_remove)
+  // {
+  //   (void)tree.remove(val);
+  //   info(tree, "Removed \033[31m" + std::to_string(val) + "\033[0m...", 4);
+  // }
 
+  (void)tree.remove(50, true);
+  info(tree, "Removed \033[31m" + std::to_string(50) + "\033[0m recursively...", 4);
   info(tree, "Final tree structure:", 8);
 
   return EXIT_SUCCESS;

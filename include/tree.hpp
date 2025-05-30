@@ -92,7 +92,11 @@ public:
    *
    * @return `true` if the value was found and removed, `false` otherwise.
    */
-  [[nodiscard]] bool remove(const value_type& _target_) { return remove(m_root, _target_); }
+  [[nodiscard]] bool remove(const value_type& _target_, const bool recursively = false)
+  {
+    if (recursively) return kill(m_root, _target_);
+    return remove(m_root, _target_);
+  }
 
   /**
    * @brief Checks whether the tree is empty.
@@ -269,6 +273,19 @@ private:
       }
     }
     return true;
+  }
+
+  [[nodiscard]] bool kill(node_ptr& _node_, const value_type& _target_)
+  {
+    if (not _node_) return false;
+    if (_node_->m_value == _target_)
+    {
+      if (_node_->m_left) kill(_node_->m_left, _node_->m_left->m_value);
+      if (_node_->m_right) kill(_node_->m_right, _node_->m_right->m_value);
+      remove(_node_, _target_);
+      return true;
+    }
+    return (kill(_node_->m_left, _node_->m_left->m_value) or kill(_node_->m_right, _node_->m_right->m_value));
   }
 
   Degree degree(const node_ptr& _node_) const
